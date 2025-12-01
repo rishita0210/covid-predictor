@@ -1,35 +1,25 @@
 from src.load_data import load_covid_data
-from src.preprocess import scale_data, create_sequences
-from src.model_lstm import build_lstm_model
+from src.preprocess import preprocess
+from src.model_lstm import build_lstm
 from src.train import train_model
 from src.predict_future import predict_future
-from src.visualize import plot_cases
 
-# Load data
-df = load_covid_data()
-plot_cases(df)
+def main():
+    # Load data
+    df = load_covid_data()
 
-# Preprocess
-scaler, scaled = scale_data(df)
-X, y = create_sequences(scaled)
+    # Change country here (India, Afghanistan, US, etc.)
+    X, y, scaler = preprocess(df, country="India")
 
-split = int(0.8 * len(X))
+    # Build + train model
+    model = build_lstm((X.shape[1], X.shape[2]))
+    train_model(model, X, y)
 
-X_train, X_test = X[:split], X[split:]
-y_train, y_test = y[:split], y[split:]
+    # Predict next 10 weeks
+    future = predict_future(model, X[-1], scaler, steps=10)
+    print("\nPredicted COVID Cases (Next 10 Weeks):")
+    print(future)
 
-# Build model
-model = build_lstm_model()
+if __name__ == "__main__":
+    main()
 
-# Train
-train_model(model, X_train, y_train, X_test, y_test, scaler)
-
-# Save model
-model.save("models/lstm_model.h5")
-
-# Predict future
-last_seq = scaled[-30:]
-future = predict_future(model, last_seq, scaler)
-
-print("Next 30 Days Prediction:")
-print(future)
