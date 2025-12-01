@@ -1,21 +1,14 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
-def predict_future(model, last_seq, scaler):
-    future = []
-    
+def predict_future(model, last_seq, scaler, steps=10):
+    predictions = []
     seq = last_seq.copy()
 
-    for _ in range(30):
-        pred = model.predict(seq.reshape(1,30,1))
-        future.append(pred[0,0])
-        seq = np.vstack([seq[1:], pred])
+    for _ in range(steps):
+        pred = model.predict(seq.reshape(1, seq.shape[0], seq.shape[1]))[0][0]
+        predictions.append(pred)
 
-    future = scaler.inverse_transform(np.array(future).reshape(-1,1))
+        seq = np.vstack([seq[1:], [pred]])
 
-    plt.plot(future)
-    plt.title("Next 30 Days Forecast")
-    plt.savefig("plots/future_forecast.png")
-    plt.close()
-
-    return future
+    predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
+    return predictions
