@@ -11,4 +11,4 @@ This project predicts future COVID-19 daily cases using an LSTM deep learning mo
 
 Run:
 
-python main.py
+python3 main.py
